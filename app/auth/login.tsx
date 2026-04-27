@@ -178,6 +178,12 @@ export default function LoginScreen() {
               <Text className="text-red-500 font-semibold">Contacter le support</Text>
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity className="items-center mt-3" onPress={() => router.push("/auth/register")}>
+            <Text className="text-xs text-gray-500">
+              Nouveau ici ? <Text className="text-red-500 font-semibold">Créer un compte</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
