@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Check, Eye, EyeOff, Fingerprint, MessageCircleQuestion, ShieldCheck, UserRound } from 'lucide-react-native';
+import { Camera, Check, Eye, EyeOff, Fingerprint, MessageCircleQuestion, ShieldCheck, UserRound } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -28,7 +28,6 @@ const COLORS = {
   surface: '#FFFFFF',
 };
 
-// ─── Reusable Input Field ───────────────────────────────────
 interface InputFieldProps {
   label: string;
   value: string;
@@ -109,7 +108,6 @@ function InputField({
   );
 }
 
-// ─── Main Screen ────────────────────────────────────────────
 export default function LoginScreen() {
   const router = useRouter();
   const [cin, setCin] = useState('');
@@ -135,6 +133,14 @@ export default function LoginScreen() {
     router.push({ pathname: "/auth/biometric", params: { cin } });
   };
 
+  const handleFaceRecognition = () => {
+    if (!cin.trim()) {
+      Alert.alert('Champ requis', 'Veuillez saisir votre numéro CIN d\'abord.');
+      return;
+    }
+    router.push({ pathname: "/auth/face-recognition" as any, params: { cin, mode: 'register' } });
+  };
+
   const isFormValid = cin.trim().length >= 10 && password.trim().length >= 4;
 
   return (
@@ -149,12 +155,10 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ── */}
         <View
           className="pt-14 px-6 pb-14"
           style={{ backgroundColor: COLORS.red }}
         >
-          {/* Badge */}
           <View
             className="self-start flex-row items-center gap-1.5 px-3 py-1.5 rounded-full mb-5"
             style={{ backgroundColor: 'rgba(255,255,255,0.18)' }}
@@ -182,7 +186,6 @@ export default function LoginScreen() {
           </Text>
         </View>
 
-        {/* ── Avatar chip ── */}
         <View className="items-center" style={{ marginTop: -24 }}>
           <View
             className="w-12 h-12 rounded-full items-center justify-center"
@@ -201,7 +204,6 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        {/* ── Card Form ── */}
         <View
           className="mx-5 mt-5 rounded-3xl px-5 pt-6 pb-5"
           style={{
@@ -213,7 +215,6 @@ export default function LoginScreen() {
             elevation: 3,
           }}
         >
-          {/* CIN */}
           <InputField
             label="NUMÉRO CIN"
             value={cin}
@@ -228,7 +229,6 @@ export default function LoginScreen() {
             isValid={cin.length >= 10}
           />
 
-          {/* Password */}
           <InputField
             label="MOT DE PASSE"
             value={password}
@@ -253,7 +253,6 @@ export default function LoginScreen() {
             }
           />
 
-          {/* Forgot password */}
           <TouchableOpacity className="self-end mb-5 -mt-2">
             <Text
               className="text-[12px] font-semibold"
@@ -263,7 +262,6 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* CTA */}
           <TouchableOpacity
             onPress={handleLogin}
             activeOpacity={0.82}
@@ -297,9 +295,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Biometric section ── */}
         <View className="mx-5 mt-4">
-          {/* Divider */}
           <View className="flex-row items-center gap-3 mb-4">
             <View className="flex-1 h-px" style={{ backgroundColor: COLORS.border }} />
             <Text
@@ -341,10 +337,39 @@ export default function LoginScreen() {
                 Empreinte
               </Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleFaceRecognition}
+              activeOpacity={0.7}
+              style={{
+                flex: 1,
+                height: 50,
+                borderRadius: 14,
+                backgroundColor: COLORS.surface,
+                borderWidth: 1,
+                borderColor: COLORS.border,
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+                gap: 7,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.04,
+                shadowRadius: 4,
+                elevation: 1,
+              }}
+            >
+              <Camera size={17} color="#374151" strokeWidth={2} />
+              <Text
+                className="text-[13px] font-semibold"
+                style={{ color: '#374151' }}
+              >
+                Visage
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* ── Footer links ── */}
         <View className="items-center mt-6 mb-10 gap-3">
           <TouchableOpacity hitSlop={{ top: 6, bottom: 6 }}>
             <Text className="text-[12px]" style={{ color: COLORS.textMuted }}>
