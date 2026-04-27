@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { BarChart3, Bell, ChevronRight, FileCheck2, LogOut, Vote } from "lucide-react-native";
+import { BarChart3, Bell, ChevronRight, LogOut, Vote } from "lucide-react-native";
 
 import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 
@@ -169,8 +169,9 @@ export default function HomeScreen() {
               <Bell size={17} color={COLORS.white} strokeWidth={2} />
             </TouchableOpacity>
 
-            {/* Avatar initials */}
-            <View
+            {/* Avatar initials - clickable profile button */}
+            <TouchableOpacity
+              onPress={() => router.push('/profile')}
               style={{
                 width: 38,
                 height: 38,
@@ -179,6 +180,7 @@ export default function HomeScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
+              activeOpacity={0.7}
             >
               <Text
                 style={{
@@ -190,7 +192,7 @@ export default function HomeScreen() {
               >
                 {initials}
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -256,13 +258,6 @@ export default function HomeScreen() {
           description="Déposer votre vote maintenant"
           onPress={() => router.push("/election/details")}
           variant="primary"
-        />
-
-        <ActionCard
-          icon={<FileCheck2 size={19} color="#374151" strokeWidth={2} />}
-          label="Vérifier un reçu"
-          description="Contrôler la validité de votre ticket"
-          onPress={() => router.push("/receipt/verify")}
         />
 
         <ActionCard
