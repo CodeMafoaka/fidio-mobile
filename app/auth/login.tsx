@@ -1,4 +1,5 @@
-import { NavigationProp } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import { Check, Eye, EyeOff, Fingerprint, ScanFace, ShieldCheck, UserRound } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -24,11 +25,8 @@ const COLORS = {
   bg: '#F7F7F7',
 };
 
-interface Props {
-  navigation: NavigationProp<any>;
-}
-
-export default function LoginScreen({ navigation }: Props) {
+export default function LoginScreen() {
+  const router = useRouter();
   const [cin, setCin] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -44,17 +42,15 @@ export default function LoginScreen({ navigation }: Props) {
       Alert.alert('Champ requis', 'Veuillez saisir votre mot de passe.');
       return;
     }
-    // Navigate to OTP screen
-    navigation.navigate('OTP', { cin });
+    router.push({ pathname: '/OTP', params: { cin } });
   };
 
   const handleBiometricFingerprint = () => {
-    // Navigate directly to biometric screen
-    navigation.navigate('Biometric', { method: 'fingerprint' });
+    Alert.alert('Info', 'Ecran biometrie non implemente pour le moment.');
   };
 
   const handleBiometricFace = () => {
-    navigation.navigate('Biometric', { method: 'face' });
+    Alert.alert('Info', 'Ecran biometrie non implemente pour le moment.');
   };
 
   return (
@@ -80,7 +76,7 @@ export default function LoginScreen({ navigation }: Props) {
         {/* ── Avatar ── */}
         <View className="items-center mt-[-26px] mb-5">
           <View className="w-13 h-13 rounded-full bg-white border-3 border-white items-center justify-center shadow-lg shadow-red-500/20">
-            <Text className="text-[24px]">👤</Text>
+            <UserRound size={24} color="#F9423A" strokeWidth={2} />
           </View>
         </View>
 
@@ -105,7 +101,7 @@ export default function LoginScreen({ navigation }: Props) {
               />
               {cin.length >= 10 && (
                 <View className="ml-2">
-                  <Text className="text-green-600 text-sm">✓</Text>
+                  <Check size={16} color="#16A34A" strokeWidth={2.5} />
                 </View>
               )}
             </View>
@@ -131,16 +127,21 @@ export default function LoginScreen({ navigation }: Props) {
                 onPress={() => setShowPassword(!showPassword)}
                 className="ml-2 p-0.5"
               >
-                <Text className="text-base text-gray-500">
-                  {showPassword ? '🙈' : '👁️'}
-                </Text>
+                {showPassword ? (
+                  <EyeOff size={18} color="#6B7280" strokeWidth={2} />
+                ) : (
+                  <Eye size={18} color="#6B7280" strokeWidth={2} />
+                )}
               </TouchableOpacity>
             </View>
           </View>
 
           {/* CTA */}
           <TouchableOpacity className="h-13 bg-red-500 rounded-[14px] items-center justify-center mt-2 shadow-lg shadow-red-500/30" onPress={handleLogin} activeOpacity={0.85}>
-            <Text className="text-white text-[15px] font-bold tracking-wide">🔐  Se connecter</Text>
+            <View className="flex-row items-center gap-2">
+              <ShieldCheck size={18} color="#FFFFFF" strokeWidth={2.2} />
+              <Text className="text-white text-[15px] font-bold tracking-wide">Se connecter</Text>
+            </View>
           </TouchableOpacity>
 
           {/* Divider */}
@@ -157,7 +158,7 @@ export default function LoginScreen({ navigation }: Props) {
               onPress={handleBiometricFingerprint}
               activeOpacity={0.7}
             >
-              <Text className="text-base">🖐️</Text>
+              <Fingerprint size={18} color="#4B5563" strokeWidth={2} />
               <Text className="text-sm text-gray-600 font-medium">Empreinte</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -165,7 +166,7 @@ export default function LoginScreen({ navigation }: Props) {
               onPress={handleBiometricFace}
               activeOpacity={0.7}
             >
-              <Text className="text-base">😊</Text>
+              <ScanFace size={18} color="#4B5563" strokeWidth={2} />
               <Text className="text-sm text-gray-600 font-medium">Facial</Text>
             </TouchableOpacity>
           </View>

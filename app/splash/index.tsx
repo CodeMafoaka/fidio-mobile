@@ -1,14 +1,12 @@
-import { NavigationProp } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import { Lock } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
 import {
     Animated,
-    Dimensions,
     StatusBar,
     Text,
     View,
 } from 'react-native';
-
-const { width, height } = Dimensions.get('window');
 
 // ─── Palette ──────────────────────────────────────────────
 const COLORS = {
@@ -18,11 +16,8 @@ const COLORS = {
   white: '#FFFFFF',
 };
 
-interface Props {
-  navigation: NavigationProp<any>;
-}
-
-export default function SplashScreen({ navigation }: Props) {
+export default function SplashScreen() {
+  const router = useRouter();
   const logoScale = useRef(new Animated.Value(0)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
@@ -62,9 +57,9 @@ export default function SplashScreen({ navigation }: Props) {
         useNativeDriver: false,
       }),
     ]).start(() => {
-      navigation.navigate('Login');
+      router.replace('/auth/login');
     });
-  }, []);
+  }, [logoOpacity, logoScale, progress, router, textOpacity, textTranslateY]);
 
   const progressWidth = progress.interpolate({
     inputRange: [0, 1],
@@ -81,7 +76,10 @@ export default function SplashScreen({ navigation }: Props) {
 
       {/* Secure badge */}
       <View className="absolute bottom-24 right-6 bg-green-600 px-3 py-1 rounded-full">
-        <Text className="text-white text-xs font-semibold">🔒 Chiffré</Text>
+        <View className="flex-row items-center gap-1.5">
+          <Lock size={12} color="#FFFFFF" strokeWidth={2.5} />
+          <Text className="text-white text-xs font-semibold">Chiffré</Text>
+        </View>
       </View>
 
       {/* Logo */}

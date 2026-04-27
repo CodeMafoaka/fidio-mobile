@@ -1,4 +1,5 @@
-import { NavigationProp, RouteProp } from '@react-navigation/native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronLeft, Delete, Smartphone } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Alert,
@@ -24,18 +25,14 @@ const OTP_LENGTH = 6;
 // Simulated OTP (in production this would come from backend)
 const SIMULATED_OTP = '473829';
 
-interface Props {
-  navigation: NavigationProp<any>;
-  route: RouteProp<any>;
-}
-
-export default function OTPScreen({ navigation, route }: Props) {
+export default function OTPScreen() {
+  const router = useRouter();
+  const { cin } = useLocalSearchParams<{ cin?: string }>();
   const [otp, setOtp] = useState('');
   const [timeLeft, setTimeLeft] = useState(180); // 3 minutes
   const [canResend, setCanResend] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const cin = route.params?.cin ?? '***';
   const maskedPhone = '+261 32 ●●● ●● 47';
 
   useEffect(() => {
@@ -49,7 +46,7 @@ export default function OTPScreen({ navigation, route }: Props) {
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          clearInterval(timerRef.current as NodeJS.Timeout);
+          clearInterval(timerRef.current as ReturnType<typeof setInterval>);
           setCanResend(true);
           return 0;
         }
@@ -79,7 +76,7 @@ export default function OTPScreen({ navigation, route }: Props) {
 
   const verifyOtp = (code: string) => {
     if (code === SIMULATED_OTP) {
-      navigation.navigate('Biometric');
+      Alert.alert('Succes', `Connexion validee pour CIN ${cin ?? '***'}.`);
     } else {
       Alert.alert(
         'Code incorrect',
@@ -109,8 +106,8 @@ export default function OTPScreen({ navigation, route }: Props) {
 
       {/* ── Header ── */}
       <View className="bg-red-500 pt-12 px-5 pb-6">
-        <TouchableOpacity onPress={() => navigation.goBack()} className="flex-row items-center gap-1 mb-4">
-          <Text className="text-white/80 text-[22px] leading-[22px]">‹</Text>
+        <TouchableOpacity onPress={() => router.back()} className="flex-row items-center gap-1 mb-4">
+          <ChevronLeft size={22} color="#FFFFFFCC" strokeWidth={2.5} />
           <Text className="text-white/80 text-xs">Retour</Text>
         </TouchableOpacity>
         <Text className="text-white text-[22px] font-bold tracking-tight">Vérification OTP</Text>
@@ -121,7 +118,7 @@ export default function OTPScreen({ navigation, route }: Props) {
       <View className="flex-1 px-6 pt-7 items-center">
         {/* Icon */}
         <View className="w-16 h-16 bg-red-50 rounded-2xl items-center justify-center mb-5">
-          <Text className="text-[30px]">📱</Text>
+          <Smartphone size={30} color="#F9423A" strokeWidth={2} />
         </View>
 
         <Text className="text-xs text-gray-500 mb-1">Code envoyé au numéro</Text>
@@ -184,8 +181,9 @@ export default function OTPScreen({ navigation, route }: Props) {
                   activeOpacity={key ? 0.6 : 1}
                 >
                   <Text className={`text-xl font-medium text-gray-900 ${key === 'del' && "text-base text-red-500"}`}>
-                    {key === 'del' ? '⌫' : key}
+                    {key === 'del' ? '' : key}
                   </Text>
+                  {key === 'del' && <Delete size={18} color="#EF4444" strokeWidth={2} />}
                 </TouchableOpacity>
               ))}
             </View>
