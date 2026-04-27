@@ -2,15 +2,15 @@ import { useRouter } from 'expo-router';
 import { Check, Eye, EyeOff, Fingerprint, MessageCircleQuestion, ShieldCheck, UserRound } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 const COLORS = {
@@ -341,37 +341,6 @@ export default function LoginScreen() {
                 Empreinte
               </Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleBiometricFace}
-              activeOpacity={0.7}
-              style={{
-                flex: 1,
-                height: 50,
-                borderRadius: 14,
-                backgroundColor: COLORS.surface,
-                borderWidth: 1,
-                borderColor: COLORS.border,
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
-                gap: 7,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.04,
-                shadowRadius: 4,
-                elevation: 1,
-              }}
-            >
-              <ScanFace size={17} color="#374151" strokeWidth={2} />
-              <Text
-                className="text-[13px] font-semibold"
-                style={{ color: '#374151' }}
-              >
-                Facial
-              </Text>
-            </TouchableOpacity>
-            
           </View>
         </View>
 
