@@ -1,0 +1,263 @@
+openapi: 3.0.3
+
+info:
+  title: Madagascar Voting System API
+  description: API for a mobile electronic voting system in Madagascar with biometric authentication and JWT
+  version: 1.0.0
+
+servers:
+  - url: https://api.vote-madagascar.com
+
+security:
+  - BearerAuth: []
+
+paths:
+  /citizens:
+    post:
+      operationId: createCitizen
+      tags:
+        - Citizen
+      description: Create a citizen
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/CreateCitizen"
+      responses:
+        '201':
+          description: Citizen(s) created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Citizen"
+
+    get:
+      operationId: getCitizens
+      tags:
+        - Citizen
+      description: Get all citizens
+      parameters:
+        - in: query
+          name: gid
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: id
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Citizen"
+
+    put:
+      operationId: updateCitizens
+      tags:
+        - Citizen
+      description: Update citizen(s) Info
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/UpdateCitizen"
+      responses:
+        '200':
+          description: Citizen(s) updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Citizen"
+
+  /elections:
+    post:
+      operationId: createElections
+      tags:
+        - Election
+      description: Create Election(s)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/CreateElection"
+      responses:
+        '201':
+          description: Election(s) created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Election"
+
+  /elections/{electionId}/result:
+    get:
+      operationId: getElectionResult
+      tags:
+        - Election
+      description: Get Election Result
+      parameters:
+        - in: query
+          name: electionId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ElectionResult"
+
+  /votes:
+    post:
+      operationId: createVotes
+      tags:
+        - Vote
+      description: Create Vote(s)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/CreateVote"
+      responses:
+        '201':
+          description: Vote(s) created
+
+components:
+  schemas:
+    ElectionResult:
+      type: object
+      properties:
+        electionId:
+          type: string
+        totalVote:
+          type: integer
+        candidateResults:
+          type: array
+          items:
+            $ref: "#/components/schemas/ElectionCandidateResult"
+
+    ElectionCandidateResult:
+      type: object
+      properties:
+        candidateGid:
+          type: string
+        voteAmount:
+          type: integer
+    CreateVote:
+      type: object
+      properties:
+        electionId:
+          type: string
+        candidateId:
+          type: string
+
+    Election:
+      allOf:
+        - $ref: "#/components/schemas/CreateElection"
+      properties:
+        id:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426655440000
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateElection:
+      type: object
+      properties:
+        title:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/ElectionCandidate"
+
+    ElectionCandidate:
+      type: object
+      properties:
+        gid:
+          type: string
+          description: Gouvernement ID
+        description:
+          type: string
+
+    UpdateCitizen:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426655440000
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    Citizen:
+      allOf:
+        - $ref: "#/components/schemas/CreateCitizen"
+      properties:
+        id:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426655440000
+
+    CreateCitizen:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        gid:
+          type: string
+          description: Gouvernement ID
+        password:
+          type: string
+
+    BiometricData:
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/BiometricDataType"
+        embedding:
+          type: array
+          items:
+            type: number
+            format: float
+
+    BiometricDataType:
+      type: string
+      enum:
+        - FACE_ID
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
