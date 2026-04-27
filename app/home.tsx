@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { BarChart3, FileCheck2, Vote } from "lucide-react-native";
+import { BarChart3, FileCheck2, MessageCircleQuestion, Vote } from "lucide-react-native";
 import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
@@ -36,6 +36,14 @@ export default function HomeScreen() {
       >
         <BarChart3 size={20} color="#374151" />
         <Text className="text-gray-800 font-semibold">Resultats en temps reel</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        className="h-14 rounded-xl bg-gray-100 flex-row items-center justify-center gap-2 mt-3"
+        onPress={() => router.push("/support/chat?context=general")}
+      >
+        <MessageCircleQuestion size={20} color="#374151" />
+        <Text className="text-gray-800 font-semibold">Ouvrir l assistant IA</Text>
       </TouchableOpacity>
     </View>
   );

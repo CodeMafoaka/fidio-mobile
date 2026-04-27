@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Check, Eye, EyeOff, Fingerprint, ScanFace, ShieldCheck, UserRound } from 'lucide-react-native';
+import { Check, Eye, EyeOff, Fingerprint, MessageCircleQuestion, ShieldCheck, UserRound } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -46,11 +46,7 @@ export default function LoginScreen() {
   };
 
   const handleBiometricFingerprint = () => {
-    Alert.alert('Info', 'Ecran biometrie non implemente pour le moment.');
-  };
-
-  const handleBiometricFace = () => {
-    Alert.alert('Info', 'Ecran biometrie non implemente pour le moment.');
+    router.push({ pathname: "/auth/biometric", params: { cin } });
   };
 
   return (
@@ -161,14 +157,6 @@ export default function LoginScreen() {
               <Fingerprint size={18} color="#4B5563" strokeWidth={2} />
               <Text className="text-sm text-gray-600 font-medium">Empreinte</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 h-12 border-[1.5px] border-gray-200 rounded-xl items-center justify-center flex-row gap-1.5 bg-white"
-              onPress={handleBiometricFace}
-              activeOpacity={0.7}
-            >
-              <ScanFace size={18} color="#4B5563" strokeWidth={2} />
-              <Text className="text-sm text-gray-600 font-medium">Facial</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Support link */}
@@ -182,6 +170,13 @@ export default function LoginScreen() {
           <TouchableOpacity className="items-center mt-3" onPress={() => router.push("/auth/register")}>
             <Text className="text-xs text-gray-500">
               Nouveau ici ? <Text className="text-red-500 font-semibold">Créer un compte</Text>
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity className="items-center mt-3 flex-row justify-center gap-1.5" onPress={() => router.push("/support/chat?context=login")}>
+            <MessageCircleQuestion size={14} color="#6B7280" />
+            <Text className="text-xs text-gray-500">
+              Besoin d&apos;aide ? <Text className="text-red-500 font-semibold">Assistant IA</Text>
             </Text>
           </TouchableOpacity>
         </View>
