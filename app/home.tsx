@@ -1,5 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+
 import { BarChart3, Bell, ChevronRight, FileCheck2, LogOut, Vote } from "lucide-react-native";
+
 import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 const COLORS = {

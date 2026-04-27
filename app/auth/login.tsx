@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Check, Eye, EyeOff, Fingerprint, ScanFace, ShieldCheck, UserRound } from 'lucide-react-native';
+import { Check, Eye, EyeOff, Fingerprint, MessageCircleQuestion, ShieldCheck, UserRound } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -132,11 +132,7 @@ export default function LoginScreen() {
   };
 
   const handleBiometricFingerprint = () => {
-    Alert.alert('Info', 'Ecran biometrie non implemente pour le moment.');
-  };
-
-  const handleBiometricFace = () => {
-    Alert.alert('Info', 'Ecran biometrie non implemente pour le moment.');
+    router.push({ pathname: "/auth/biometric", params: { cin } });
   };
 
   const isFormValid = cin.trim().length >= 10 && password.trim().length >= 4;
@@ -375,6 +371,7 @@ export default function LoginScreen() {
                 Facial
               </Text>
             </TouchableOpacity>
+            
           </View>
         </View>
 
@@ -398,6 +395,13 @@ export default function LoginScreen() {
               <Text className="font-bold" style={{ color: COLORS.red }}>
                 Créer un compte
               </Text>
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity className="items-center mt-3 flex-row justify-center gap-1.5" onPress={() => router.push("/support/chat?context=login")}>
+            <MessageCircleQuestion size={14} color="#6B7280" />
+            <Text className="text-xs text-gray-500">
+              Besoin d&apos;aide ? <Text className="text-red-500 font-semibold">Assistant IA</Text>
             </Text>
           </TouchableOpacity>
         </View>
