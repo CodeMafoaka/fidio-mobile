@@ -2,11 +2,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, Delete, Smartphone } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // ─── Palette ──────────────────────────────────────────────
@@ -76,7 +76,7 @@ export default function OTPScreen() {
 
   const verifyOtp = (code: string) => {
     if (code === SIMULATED_OTP) {
-      router.push({ pathname: '/auth/biometric', params: { cin: cin ?? '' } });
+      router.replace({ pathname: '/home', params: { cin: cin ?? '' } });
     } else {
       Alert.alert(
         'Code incorrect',

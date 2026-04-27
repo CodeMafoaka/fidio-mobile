@@ -126,7 +126,7 @@ export default function LoginScreen() {
       Alert.alert('Champ requis', 'Veuillez saisir votre mot de passe.');
       return;
     }
-    router.push({ pathname: '/OTP', params: { cin } });
+    router.replace({ pathname: '/home', params: { cin } });
   };
 
   const handleBiometricFingerprint = () => {

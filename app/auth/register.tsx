@@ -2,15 +2,15 @@ import { useRouter } from "expo-router";
 import { Check, CircleCheckBig, Eye, EyeOff, UserPlus } from "lucide-react-native";
 import { useState } from "react";
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const COLORS = {
@@ -153,7 +153,7 @@ export default function RegisterScreen() {
     }
 
     Alert.alert("Inscription reussie", "Votre compte electeur est cree.", [
-      { text: "Continuer", onPress: () => router.replace({ pathname: "/OTP", params: { cin } }) },
+      { text: "Continuer", onPress: () => router.replace({ pathname: "/home", params: { cin } }) },
     ]);
   };
 
