@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { BarChart3, CheckCircle2, ChevronRight, Copy, ReceiptText } from "lucide-react-native";
-import { Alert, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { BarChart3, CheckCircle2 } from "lucide-react-native";
+import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 const COLORS = {
   red: '#F9423A',
@@ -16,19 +16,9 @@ const COLORS = {
   surface: '#FFFFFF',
 };
 
-function buildReceiptId() {
-  const rand = Math.floor(Math.random() * 900000 + 100000);
-  return `REC-${new Date().getFullYear()}-${rand}`;
-}
-
 export default function VoteSuccessScreen() {
   const router = useRouter();
   const { candidateId } = useLocalSearchParams<{ candidateId?: string }>();
-  const receiptId = buildReceiptId();
-
-  const handleCopy = () => {
-    Alert.alert("Copié", `Identifiant ${receiptId} copié.`);
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -102,7 +92,7 @@ export default function VoteSuccessScreen() {
 
       <View style={{ paddingHorizontal: 20, paddingTop: 20, flex: 1 }}>
 
-        {/* Receipt card */}
+        {/* Confirmation message */}
         <View
           style={{
             backgroundColor: COLORS.surface,
@@ -116,125 +106,13 @@ export default function VoteSuccessScreen() {
             elevation: 3,
           }}
         >
-          {/* Card header */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-            <View
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 11,
-                backgroundColor: '#F3F4F6',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ReceiptText size={17} color="#374151" strokeWidth={2} />
-            </View>
-            <View>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.textDark }}>
-                Reçu anonyme
-              </Text>
-              <Text style={{ fontSize: 11, color: COLORS.textMuted }}>
-                Conservez cet identifiant
-              </Text>
-            </View>
-          </View>
-
-          {/* Receipt ID row */}
-          <View
-            style={{
-              backgroundColor: COLORS.bg,
-              borderRadius: 14,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              borderWidth: 1,
-              borderColor: COLORS.border,
-              marginBottom: 14,
-            }}
-          >
-            <View>
-              <Text style={{ fontSize: 10, fontWeight: '600', color: COLORS.textMuted, letterSpacing: 1, marginBottom: 4 }}>
-                IDENTIFIANT DE VÉRIFICATION
-              </Text>
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: '800',
-                  color: COLORS.textDark,
-                  letterSpacing: 1,
-                }}
-              >
-                {receiptId}
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={handleCopy}
-              activeOpacity={0.7}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                backgroundColor: COLORS.surface,
-                borderWidth: 1,
-                borderColor: COLORS.border,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Copy size={15} color="#374151" strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Disclaimer */}
-          <View
-            style={{
-              backgroundColor: COLORS.greenBg,
-              borderRadius: 12,
-              padding: 12,
-              borderWidth: 1,
-              borderColor: '#BBF7D0',
-            }}
-          >
-            <Text style={{ fontSize: 11, color: '#166534', lineHeight: 17, fontWeight: '500' }}>
-              🔒 Aucun candidat n&apos;apparaît dans ce reçu. Votre anonymat est garanti.
-            </Text>
-            {candidateId && (
-              <Text style={{ fontSize: 10, color: '#4ADE80', marginTop: 4, letterSpacing: 0.3 }}>
-                Réf. interne : {candidateId}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        {/* CTA buttons */}
-        <TouchableOpacity
-          onPress={() => router.push({ pathname: "/receipt/verify", params: { receiptId } })}
-          activeOpacity={0.82}
-          style={{
-            height: 54,
-            borderRadius: 16,
-            backgroundColor: COLORS.red,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            marginBottom: 10,
-            shadowColor: COLORS.red,
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.28,
-            shadowRadius: 12,
-            elevation: 5,
-          }}
-        >
-          <ReceiptText size={17} color={COLORS.white} strokeWidth={2} />
-          <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.white, letterSpacing: 0.2 }}>
-            Vérifier ce reçu
+          <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.textDark, marginBottom: 8 }}>
+            Vote confirmé
           </Text>
-          <ChevronRight size={16} color={COLORS.white} strokeWidth={2.5} />
-        </TouchableOpacity>
+          <Text style={{ fontSize: 12, color: COLORS.textMuted, lineHeight: 18 }}>
+            Votre choix a été enregistré de manière sécurisée et anonyme dans le système de vote électronique.
+          </Text>
+        </View>
 
         <TouchableOpacity
           onPress={() => router.push("/results/live")}
