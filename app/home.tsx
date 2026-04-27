@@ -118,7 +118,7 @@ export default function HomeScreen() {
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Greeting */}
+          {/* Greeting with user info */}
           <View style={{ flex: 1 }}>
             <Text
               style={{
@@ -137,9 +137,10 @@ export default function HomeScreen() {
                 fontWeight: '800',
                 color: COLORS.white,
                 letterSpacing: -0.4,
+                marginBottom: 2,
               }}
             >
-              Électeur
+              Jean Rakoto
             </Text>
             <Text
               style={{
@@ -150,6 +151,16 @@ export default function HomeScreen() {
               }}
             >
               CIN : {displayCin}
+            </Text>
+            <Text
+              style={{
+                fontSize: 10,
+                color: 'rgba(255,255,255,0.5)',
+                marginTop: 1,
+                letterSpacing: 0.2,
+              }}
+            >
+              ✓ Compte vérifié • Vote completé
             </Text>
           </View>
 
