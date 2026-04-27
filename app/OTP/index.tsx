@@ -76,7 +76,7 @@ export default function OTPScreen() {
 
   const verifyOtp = (code: string) => {
     if (code === SIMULATED_OTP) {
-      Alert.alert('Succes', `Connexion validee pour CIN ${cin ?? '***'}.`);
+      router.push({ pathname: '/auth/biometric', params: { cin: cin ?? '' } });
     } else {
       Alert.alert(
         'Code incorrect',
