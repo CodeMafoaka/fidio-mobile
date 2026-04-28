@@ -11,6 +11,9 @@ servers:
 security:
   - BearerAuth: []
 
+tags:
+  -
+
 paths:
   /citizens:
     post:
@@ -113,7 +116,7 @@ paths:
         - Election
       description: Get Election Result
       parameters:
-        - in: query
+        - in: path
           name: electionId
           required: true
           schema:
@@ -143,8 +146,75 @@ paths:
         '201':
           description: Vote(s) created
 
+  /auth/login:
+    post:
+      operationId: login
+      tags:
+        - Auth
+      description: Authenticate a citizen and get a JWT
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags:
+        - Auth
+      description: Register a new citizen
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCitizen"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Citizen"
+
+  /auth/me:
+    get:
+      operationId: whoami
+      tags:
+        - Auth
+      description: Get current authenticated citizen
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Citizen"
+
 components:
   schemas:
+    LoginRequest:
+      type: object
+      properties:
+        gid:
+          type: string
+        password:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+
     ElectionResult:
       type: object
       properties:

@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useAuth } from '../../hooks/useAuth';
 
 const COLORS = {
   red: '#F9423A',
@@ -110,14 +111,14 @@ function InputField({
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login, isLoading, error, clearError } = useAuth();
   const [cin, setCin] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [cinFocused, setCinFocused] = useState(false);
   const [pwdFocused, setPwdFocused] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!cin.trim()) {
       Alert.alert('Champ requis', 'Veuillez saisir votre numéro CIN.');
       return;
@@ -126,7 +127,24 @@ export default function LoginScreen() {
       Alert.alert('Champ requis', 'Veuillez saisir votre mot de passe.');
       return;
     }
-    router.replace({ pathname: '/home', params: { cin } });
+
+    clearError();
+    
+    const result = await login({
+      gid: cin.trim(),
+      password: password.trim(),
+    });
+
+    if (result) {
+      // Stocker le token JWT si nécessaire
+      // await SecureStore.setItemAsync('authToken', result.token);
+      
+      Alert.alert('Connexion réussie', 'Bienvenue sur la plateforme de vote électronique.', [
+        { text: 'Continuer', onPress: () => router.replace({ pathname: '/home', params: { cin } }) },
+      ]);
+    } else if (error) {
+      Alert.alert('Erreur de connexion', error);
+    }
   };
 
   const handleBiometricFingerprint = () => {
@@ -265,32 +283,44 @@ export default function LoginScreen() {
           <TouchableOpacity
             onPress={handleLogin}
             activeOpacity={0.82}
-            disabled={isLoading}
+            disabled={isLoading || !isFormValid}
             style={{
               height: 52,
               borderRadius: 16,
-              backgroundColor: isFormValid ? COLORS.red : '#F3F4F6',
+              backgroundColor: (isFormValid && !isLoading) ? COLORS.red : '#F3F4F6',
               alignItems: 'center',
               justifyContent: 'center',
-              shadowColor: isFormValid ? COLORS.red : 'transparent',
+              shadowColor: (isFormValid && !isLoading) ? COLORS.red : 'transparent',
               shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: isFormValid ? 0.3 : 0,
+              shadowOpacity: (isFormValid && !isLoading) ? 0.3 : 0,
               shadowRadius: 12,
-              elevation: isFormValid ? 4 : 0,
+              elevation: (isFormValid && !isLoading) ? 4 : 0,
+              opacity: (isLoading || !isFormValid) ? 0.6 : 1,
             }}
           >
             <View className="flex-row items-center gap-2">
-              <ShieldCheck
-                size={17}
-                color={isFormValid ? '#FFFFFF' : '#9CA3AF'}
-                strokeWidth={2.2}
-              />
-              <Text
-                className="text-[15px] font-bold tracking-wide"
-                style={{ color: isFormValid ? COLORS.white : COLORS.textMuted }}
-              >
-                Se connecter
-              </Text>
+              {isLoading ? (
+                <Text
+                  className="text-[15px] font-bold tracking-wide"
+                  style={{ color: COLORS.textMuted }}
+                >
+                  Connexion...
+                </Text>
+              ) : (
+                <>
+                  <ShieldCheck
+                    size={17}
+                    color={isFormValid ? '#FFFFFF' : '#9CA3AF'}
+                    strokeWidth={2.2}
+                  />
+                  <Text
+                    className="text-[15px] font-bold tracking-wide"
+                    style={{ color: isFormValid ? COLORS.white : COLORS.textMuted }}
+                  >
+                    Se connecter
+                  </Text>
+                </>
+              )}
             </View>
           </TouchableOpacity>
         </View>

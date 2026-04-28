@@ -2,16 +2,17 @@ import { useRouter } from "expo-router";
 import { Check, CircleCheckBig, Eye, EyeOff, UserPlus } from "lucide-react-native";
 import { useState } from "react";
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { useAuth } from "../../hooks/useAuth";
 
 const COLORS = {
   red: '#F9423A',
@@ -140,21 +141,45 @@ function StepDots({ total, current }: { total: number; current: number }) {
 // ─── Main Screen ────────────────────────────────────────────
 export default function RegisterScreen() {
   const router = useRouter();
+  const { register, isLoading, error, clearError } = useAuth();
   const [fullName, setFullName] = useState("");
   const [cin, setCin] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleRegister = () => {
-    if (!fullName.trim() || !cin.trim() || !phone.trim() || !password.trim()) {
-      Alert.alert("Champ requis", "Veuillez remplir tous les champs.");
+  const handleRegister = async () => {
+    if (!fullName.trim() || !cin.trim() || !password.trim()) {
+      Alert.alert("Champ requis", "Veuillez remplir tous les champs obligatoires.");
       return;
     }
 
-    Alert.alert("Inscription reussie", "Votre compte electeur est cree.", [
-      { text: "Continuer", onPress: () => router.replace({ pathname: "/home", params: { cin } }) },
-    ]);
+    // Split fullName into firstName and lastName
+    const nameParts = fullName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    if (!firstName || !lastName) {
+      Alert.alert("Nom invalide", "Veuillez entrer votre nom complet (prénom et nom).");
+      return;
+    }
+
+    clearError();
+    
+    const result = await register({
+      firstName,
+      lastName,
+      gid: cin.trim(),
+      password: password.trim(),
+    });
+
+    if (result) {
+      Alert.alert("Inscription réussie", "Votre compte électeur est créé.", [
+        { text: "Continuer", onPress: () => router.replace({ pathname: "/home", params: { cin } }) },
+      ]);
+    } else if (error) {
+      Alert.alert("Erreur d'inscription", error);
+    }
   };
 
   const isFormValid =
@@ -339,37 +364,54 @@ export default function RegisterScreen() {
           {/* CTA */}
           <TouchableOpacity
             onPress={handleRegister}
+            disabled={isLoading || !isFormValid}
             activeOpacity={0.82}
             style={{
               height: 52,
               borderRadius: 16,
-              backgroundColor: isFormValid ? COLORS.red : '#F3F4F6',
+              backgroundColor: (isFormValid && !isLoading) ? COLORS.red : '#F3F4F6',
               alignItems: 'center',
               justifyContent: 'center',
-              shadowColor: isFormValid ? COLORS.red : 'transparent',
+              shadowColor: (isFormValid && !isLoading) ? COLORS.red : 'transparent',
               shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: isFormValid ? 0.3 : 0,
+              shadowOpacity: (isFormValid && !isLoading) ? 0.3 : 0,
               shadowRadius: 12,
-              elevation: isFormValid ? 4 : 0,
+              elevation: (isFormValid && !isLoading) ? 4 : 0,
               flexDirection: 'row',
               gap: 8,
+              opacity: (isLoading || !isFormValid) ? 0.6 : 1,
             }}
           >
-            <CircleCheckBig
-              size={17}
-              color={isFormValid ? COLORS.white : COLORS.textMuted}
-              strokeWidth={2.2}
-            />
-            <Text
-              style={{
-                fontSize: 15,
-                fontWeight: '700',
-                letterSpacing: 0.3,
-                color: isFormValid ? COLORS.white : COLORS.textMuted,
-              }}
-            >
-              S&apos;inscrire
-            </Text>
+            {isLoading ? (
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: '700',
+                  letterSpacing: 0.3,
+                  color: COLORS.textMuted,
+                }}
+              >
+                Inscription...
+              </Text>
+            ) : (
+              <>
+                <CircleCheckBig
+                  size={17}
+                  color={isFormValid ? COLORS.white : COLORS.textMuted}
+                  strokeWidth={2.2}
+                />
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: '700',
+                    letterSpacing: 0.3,
+                    color: isFormValid ? COLORS.white : COLORS.textMuted,
+                  }}
+                >
+                  S&apos;inscrire
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
 
