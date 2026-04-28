@@ -1,5 +1,8 @@
+import { useAuth } from "@/hooks/useAuth";
+import { Election } from "@/types/auth";
 import { useRouter } from "expo-router";
 import { CalendarClock, ChevronRight, Clock3, ShieldCheck, Users } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 const COLORS = {
@@ -58,6 +61,61 @@ function InfoRow({ icon, label, value }: InfoRowProps) {
 
 export default function ElectionDetailsScreen() {
   const router = useRouter();
+  const { getElections, isAuthenticated } = useAuth();
+  const [elections, setElections] = useState<Election[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchElections = async () => {
+      console.log('Page: useEffect started - checking authentication');
+      
+      // Vérifier si l'utilisateur est authentifié
+      if (!isAuthenticated()) {
+        console.log('Page: User not authenticated, redirecting to login');
+        router.replace('/auth/login');
+        return;
+      }
+      
+      console.log('Page: User authenticated, fetching elections');
+      try {
+        const electionsData = await getElections();
+        console.log('Page: Elections data received:', electionsData);
+        
+        if (electionsData) {
+          console.log('Page: Setting elections state with', electionsData.length, 'elections');
+          setElections(electionsData);
+          
+          // Logs des élections après mise à jour de l'état
+          console.log('Page: Current elections:', electionsData);
+          console.log('Page: Number of elections:', electionsData.length);
+          electionsData.forEach((election, index) => {
+            console.log(`Page: Election ${index + 1}:`, election.title);
+            console.log(`Page: Election ${index + 1} candidates count:`, election.candidates?.length || 0);
+          });
+        } else {
+          console.log('Page: No elections data received');
+        }
+      } catch (error) {
+        console.error('Page: Failed to fetch elections:', error);
+      } finally {
+        console.log('Page: Setting loading to false');
+        setLoading(false);
+      }
+    };
+    
+    fetchElections();
+  }, []); // Utiliser un tableau vide pour exécuter une seule fois au montage
+  
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -97,63 +155,66 @@ export default function ElectionDetailsScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Main election card */}
-        <View
-          style={{
-            backgroundColor: COLORS.surface,
-            borderRadius: 22,
-            padding: 20,
-            marginBottom: 14,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.06,
-            shadowRadius: 10,
-            elevation: 3,
-          }}
-        >
-          {/* Title row */}
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-            <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.textDark, letterSpacing: -0.3, lineHeight: 23 }}>
-                Élection présidentielle 2026
-              </Text>
-              <Text style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>
-                Sélection d&apos;un candidat unique
-              </Text>
+        {/* Elections list */}
+        {elections.map((election, index) => (
+          <View
+            key={election.id}
+            style={{
+              backgroundColor: COLORS.surface,
+              borderRadius: 22,
+              padding: 20,
+              marginBottom: 14,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 10,
+              elevation: 3,
+            }}
+          >
+            {/* Title row */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.textDark, letterSpacing: -0.3, lineHeight: 23 }}>
+                  {election.title || 'Élection présidentielle 2026'}
+                </Text>
+                <Text style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>
+                  Sélection d&apos;un candidat unique
+                </Text>
+              </View>
+              <View
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 20,
+                  backgroundColor: '#DCFCE7',
+                }}
+              >
+                <Text style={{ fontSize: 10, fontWeight: '700', color: '#16A34A', letterSpacing: 0.5 }}>
+                  OUVERTE
+                </Text>
+              </View>
             </View>
-            <View
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 20,
-                backgroundColor: '#DCFCE7',
-              }}
-            >
-              <Text style={{ fontSize: 10, fontWeight: '700', color: '#16A34A', letterSpacing: 0.5 }}>
-                OUVERTE
-              </Text>
-            </View>
-          </View>
 
-          {/* Info rows */}
-          <InfoRow
-            icon={<CalendarClock size={16} color="#6B7280" strokeWidth={2} />}
-            label="CLÔTURE"
-            value="30 avril 2026 à 18h00"
-          />
-          <InfoRow
-            icon={<Clock3 size={16} color="#6B7280" strokeWidth={2} />}
-            label="DURÉE"
-            value="Tour unique — vote définitif"
-          />
-          <View style={{ borderBottomWidth: 0 }}>
+            {/* Info rows */}
             <InfoRow
-              icon={<Users size={16} color="#6B7280" strokeWidth={2} />}
-              label="CANDIDATS"
-              value="3 candidats en lice"
+              icon={<CalendarClock size={16} color="#6B7280" strokeWidth={2} />}
+              label="CLÔTURE"
+              value={formatDate(election.endAt)}
             />
+            <InfoRow
+              icon={<Clock3 size={16} color="#6B7280" strokeWidth={2} />}
+              label="DURÉE"
+              value="Tour unique — vote définitif"
+            />
+            <View style={{ borderBottomWidth: 0 }}>
+              <InfoRow
+                icon={<Users size={16} color="#6B7280" strokeWidth={2} />}
+                label="CANDIDATS"
+                value={`${election.candidates?.length || 0} candidats en lice`}
+              />
+            </View>
           </View>
-        </View>
+        ))}
 
         {/* Security notice card */}
         <View
@@ -208,7 +269,7 @@ export default function ElectionDetailsScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.push("/election/candidates")}
+          onPress={() => router.push({ pathname: "/election/candidates", params: { electionId: elections[0]?.id } })}
           activeOpacity={0.82}
           style={{
             height: 54,

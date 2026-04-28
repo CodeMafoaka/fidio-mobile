@@ -1,4 +1,4 @@
-import { ApiError, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse } from '../types/auth';
+import { ApiError, Election, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse } from '../types/auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://fidio-api-dev.onrender.com';
 
@@ -62,6 +62,42 @@ class ApiService {
     }
     
     return this.request<UserResponse>('/auth/me', {
+      method: 'GET',
+      headers,
+    });
+  }
+
+  async getElections(token?: string): Promise<Election[]> {
+    const headers: HeadersInit = {};
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    console.log('API: Fetching elections from /elections');
+    console.log('API: Using token:', token ? 'YES' : 'NO');
+    
+    try {
+      const result = await this.request<Election[]>('/elections', {
+        method: 'GET',
+        headers,
+      });
+      console.log('API: Elections fetched successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('API: Failed to fetch elections:', error);
+      throw error;
+    }
+  }
+
+  async getElectionResult(electionId: string, token?: string): Promise<Election> {
+    const headers: HeadersInit = {};
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return this.request<Election>(`/elections/${electionId}/result`, {
       method: 'GET',
       headers,
     });

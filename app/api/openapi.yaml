@@ -296,6 +296,8 @@ components:
         id:
           type: string
           example: 123e4567-e89b-12d3-a456-426655440000
+        role:
+          $ref: "#/components/schemas/Role"
 
     CreateCitizen:
       type: object
@@ -309,6 +311,12 @@ components:
           description: Gouvernement ID
         password:
           type: string
+
+    Role:
+      type: string
+      enum:
+        - ADMIN
+        - USER
 
     BiometricData:
       type: object

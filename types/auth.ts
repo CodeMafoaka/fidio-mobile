@@ -41,3 +41,24 @@ export interface ApiError {
   code?: string;
   details?: any;
 }
+
+export interface Candidate {
+  gid: string;
+  description: string;
+}
+
+export interface Election {
+  id: string;
+  createdAt: string;
+  title: string;
+  startAt: string;
+  endAt: string;
+  candidates: Candidate[];
+}
+
+export interface ElectionsResponse {
+  elections: Election[];
+}
+
+// La réponse API est un tableau direct d'élections
+export type ElectionsApiResponse = Election[];
