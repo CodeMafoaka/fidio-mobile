@@ -106,34 +106,24 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      console.log('Fetching user data...');
       const userData = await getCurrentUser();
-      console.log('User data received:', userData);
       if (userData) {
         setUser(userData);
-        console.log('User data set:', userData);
-      } else {
-        console.log('No user data received');
       }
     };
     
     fetchUserData();
-  }, [getCurrentUser]);
+  }, []); // Exécuter une seule fois au montage
 
   // Use fetched user data or fallback to CIN param
   const displayCin = user?.gid || cin || '—';
-  const displayName = user ? `${user.firstName} ${user.lastName}` : 'Jean Rakoto';
+  const displayName = user ? `${user.firstName} ${user.lastName}` : '';
   const initials = displayName
     .split(' ')
     .map(name => name.charAt(0).toUpperCase())
     .join('')
     .slice(0, 2) || 'EL';
 
-  // Debug logs
-  console.log('Current user state:', user);
-  console.log('Display CIN:', displayCin);
-  console.log('Display name:', displayName);
-  console.log('Initials:', initials);
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>

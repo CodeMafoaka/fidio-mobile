@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { apiService } from '../services/api';
 import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse } from '../types/auth';
 
@@ -45,14 +45,13 @@ export const useAuth = () => {
     }
   };
 
-  const getCurrentUser = async (token?: string): Promise<UserResponse | null> => {
+  const getCurrentUser = useCallback(async (token?: string): Promise<UserResponse | null> => {
     setIsLoading(true);
     setError(null);
     
     try {
       // Utiliser le token stocké ou le token passé en paramètre
       const tokenToUse = token || authToken || undefined;
-      console.log('Using token for getCurrentUser:', tokenToUse);
       const user = await apiService.getCurrentUser(tokenToUse);
       setCurrentUser(user);
       return user;
@@ -63,7 +62,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const clearError = () => {
     setError(null);

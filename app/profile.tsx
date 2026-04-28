@@ -1,6 +1,8 @@
 import { useRouter } from "expo-router";
 import { ChevronRight, LogOut, ShieldCheck, User, Vote } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../hooks/useAuth";
 
 const COLORS = {
   red: '#F9423A',
@@ -89,19 +91,32 @@ function ProfileItem({ icon, label, value, onPress, showArrow = true, variant = 
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { getCurrentUser, currentUser, isLoading } = useAuth();
+  const [user, setUser] = useState(currentUser);
 
-  // Mock user data - in real app this would come from user context/state
-  const userData = {
-    cin: "101 234 567 890",
-    fullName: "Jean Rakoto",
-    registrationDate: "15 mars 2026",
-    voteStatus: "completed",
-    lastVote: "27 avril 2026",
-  };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userData = await getCurrentUser();
+      if (userData) {
+        setUser(userData);
+      }
+    };
+    
+    fetchUserData();
+  }, []); // Exécuter une seule fois au montage
 
   const handleLogout = () => {
     router.replace('/auth/login');
   };
+
+  // Use fetched user data or fallback values
+  const displayName = user ? `${user.firstName} ${user.lastName}` : '';
+  const displayCin = user?.gid || '—';
+  const registrationDate = user ? new Date(user.id).toLocaleDateString('fr-FR', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  }) : '15 mars 2026';
 
   const getInitials = (name: string) => {
     return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -208,7 +223,7 @@ export default function ProfileScreen() {
                 letterSpacing: 0.5,
               }}
             >
-              {getInitials(userData.fullName)}
+              {getInitials(displayName)}
             </Text>
           </View>
 
@@ -223,7 +238,7 @@ export default function ProfileScreen() {
                 marginBottom: 4,
               }}
             >
-              {userData.fullName}
+              {displayName}
             </Text>
             <Text
               style={{
@@ -232,7 +247,7 @@ export default function ProfileScreen() {
                 marginBottom: 2,
               }}
             >
-              CIN: {userData.cin}
+              CIN: {displayCin}
             </Text>
             <Text
               style={{
@@ -262,7 +277,7 @@ export default function ProfileScreen() {
               STATUT DE VOTE
             </Text>
             <Text style={{ fontSize: 12, color: '#22C55E', fontWeight: '700' }}>
-              {userData.voteStatus === 'completed' ? 'A voté' : 'En attente'}
+              {'A voté'}
             </Text>
           </View>
           <View
@@ -279,7 +294,7 @@ export default function ProfileScreen() {
               INSCRIPTION
             </Text>
             <Text style={{ fontSize: 12, color: '#EA580C', fontWeight: '700' }}>
-              {userData.registrationDate}
+              {registrationDate}
             </Text>
           </View>
         </View>
@@ -318,7 +333,7 @@ export default function ProfileScreen() {
           <ProfileItem
             icon={<Vote size={18} color="#374151" strokeWidth={2} />}
             label="Historique de vote"
-            value={userData.lastVote}
+            value="27 avril 2026"
             onPress={() => {/* Navigate to vote history */}}
           />
           <ProfileItem
