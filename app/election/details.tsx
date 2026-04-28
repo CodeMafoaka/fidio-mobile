@@ -3,7 +3,7 @@ import { Election } from "@/types/auth";
 import { useRouter } from "expo-router";
 import { CalendarClock, Clock3, ShieldCheck, Users } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { ScrollView, StatusBar, Text, View } from "react-native";
+import { ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 const COLORS = {
   red: '#F9423A',
@@ -157,8 +157,16 @@ export default function ElectionDetailsScreen() {
       >
         {/* Elections list */}
         {elections.map((election, index) => (
-          <View
+          <TouchableOpacity
             key={election.id}
+            onPress={() => router.push({ 
+              pathname: "/election/candidates", 
+              params: { 
+                electionId: election.id,
+                electionData: JSON.stringify(election)
+              } 
+            })}
+            activeOpacity={0.9}
             style={{
               backgroundColor: COLORS.surface,
               borderRadius: 22,
@@ -196,24 +204,24 @@ export default function ElectionDetailsScreen() {
             </View>
 
             {/* Info rows */}
-            <InfoRow
-              icon={<CalendarClock size={16} color="#6B7280" strokeWidth={2} />}
-              label="CLÔTURE"
-              value={formatDate(election.endAt)}
-            />
-            <InfoRow
-              icon={<Clock3 size={16} color="#6B7280" strokeWidth={2} />}
-              label="DURÉE"
-              value="Tour unique — vote définitif"
-            />
-            <View style={{ borderBottomWidth: 0 }}>
+            <View>
+              <InfoRow
+                icon={<CalendarClock size={16} color="#6B7280" strokeWidth={2} />}
+                label="CLÔTURE"
+                value={formatDate(election.endAt)}
+              />
+              <InfoRow
+                icon={<Clock3 size={16} color="#6B7280" strokeWidth={2} />}
+                label="DURÉE"
+                value="Tour unique — vote définitif"
+              />
               <InfoRow
                 icon={<Users size={16} color="#6B7280" strokeWidth={2} />}
                 label="CANDIDATS"
                 value={`${election.candidates?.length || 0} candidats en lice`}
               />
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
 
         {/* Security notice card */}

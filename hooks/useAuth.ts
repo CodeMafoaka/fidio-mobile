@@ -124,12 +124,37 @@ export const useAuth = () => {
     return !!authToken;
   };
 
+  const vote = useCallback(async (voteData: VoteRequest): Promise<VoteResponse | null> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Utiliser le token stocké
+      const tokenToUse = authToken || undefined;
+      console.log('Hook: Submitting vote with token:', tokenToUse ? 'YES' : 'NO');
+      console.log('Hook: Vote data:', voteData);
+      
+      const result = await apiService.vote(voteData, tokenToUse);
+      console.log('Hook: Vote submitted successfully:', result);
+      
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit vote';
+      console.error('Hook: Vote error:', errorMessage);
+      setError(errorMessage);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     register,
     login,
     getCurrentUser,
     getElections,
     getElectionResult,
+    vote,
     currentUser,
     isLoading,
     error,

@@ -1,4 +1,4 @@
-import { ApiError, Election, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse } from '../types/auth';
+import { ApiError, Election, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse, VoteRequest, VoteResponse } from '../types/auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://fidio-api-dev.onrender.com';
 
@@ -101,6 +101,84 @@ class ApiService {
       method: 'GET',
       headers,
     });
+  }
+
+  async vote(voteData: VoteRequest, token?: string): Promise<VoteResponse> {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    console.log('API: Submitting vote for election:', voteData.electionId);
+    console.log('API: Candidate ID:', voteData.candidateId);
+    
+    // L'API attend un tableau d'objets de vote
+    const voteArray = [voteData];
+    console.log('API: Sending vote array:', voteArray);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/votes`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(voteArray),
+      });
+      
+      console.log('API: Vote response status:', response.status);
+      console.log('API: Vote response ok:', response.ok);
+      
+      if (response.ok) {
+        // Pour une réponse 201 Created sans corps, retourner un succès par défaut
+        if (response.status === 201) {
+          const successResponse: VoteResponse = {
+            success: true,
+            message: 'Vote created successfully',
+            voteId: 'generated'
+          };
+          console.log('API: Vote submitted successfully (201 Created):', successResponse);
+          return successResponse;
+        }
+        
+        // Essayer de parser la réponse si elle a un contenu
+        const text = await response.text();
+        console.log('API: Vote response text:', text);
+        
+        if (text) {
+          try {
+            const result = JSON.parse(text) as VoteResponse;
+            console.log('API: Vote submitted successfully:', result);
+            return result;
+          } catch (parseError) {
+            console.log('API: Response is not JSON, treating as success');
+            return {
+              success: true,
+              message: 'Vote submitted successfully',
+              voteId: 'generated'
+            };
+          }
+        } else {
+          // Réponse vide mais succès
+          const successResponse: VoteResponse = {
+            success: true,
+            message: 'Vote submitted successfully',
+            voteId: 'generated'
+          };
+          console.log('API: Vote submitted successfully (empty response):', successResponse);
+          return successResponse;
+        }
+      } else {
+        // Gérer les erreurs HTTP
+        const errorText = await response.text();
+        console.error('API: Vote failed with status:', response.status);
+        console.error('API: Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+    } catch (error) {
+      console.error('API: Failed to submit vote:', error);
+      throw error;
+    }
   }
 
   async get<T>(endpoint: string, headers?: HeadersInit): Promise<T> {

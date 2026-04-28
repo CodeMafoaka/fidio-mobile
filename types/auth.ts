@@ -62,3 +62,15 @@ export interface ElectionsResponse {
 
 // La réponse API est un tableau direct d'élections
 export type ElectionsApiResponse = Election[];
+
+// Types pour l'API de vote
+export interface VoteRequest {
+  electionId: string;
+  candidateId: string;
+}
+
+export interface VoteResponse {
+  success: boolean;
+  message: string;
+  voteId?: string;
+}

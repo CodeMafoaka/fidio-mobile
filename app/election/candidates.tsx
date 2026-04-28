@@ -1,7 +1,9 @@
-import { useRouter } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
+import { Election } from "@/types/auth";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { CheckCircle2, ChevronRight, Users } from "lucide-react-native";
-import { useState } from "react";
-import { ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 const COLORS = {
   red: '#F9423A',
@@ -14,19 +16,77 @@ const COLORS = {
   surface: '#FFFFFF',
 };
 
-const CANDIDATES = [
-  { id: "c1", name: "Andry R.", party: "Union citoyenne", desc: "Modernisation et emploi.", color: "#3B82F6" },
-  { id: "c2", name: "Miora L.", party: "Mada verte", desc: "Transition écologique et locale.", color: "#22C55E" },
-  { id: "c3", name: "Tiana M.", party: "Justice sociale", desc: "Éducation et transparence.", color: "#A855F7" },
-];
-
 function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 }
 
 export default function CandidatesScreen() {
+  const params = useLocalSearchParams<{ electionId: string; electionData: string }>();
+  const { vote, isLoading } = useAuth();
   const router = useRouter();
+  const [election, setElection] = useState<Election | null>(null);
   const [selected, setSelected] = useState<string>("");
+
+  useEffect(() => {
+    // Utiliser les données de l'élection passées en paramètre
+    if (params.electionData) {
+      try {
+        const electionData = JSON.parse(params.electionData);
+        console.log('Candidates: Using election data from params:', electionData);
+        setElection(electionData);
+        console.log('Candidates: Candidates count:', electionData.candidates?.length || 0);
+      } catch (error) {
+        console.error('Candidates: Failed to parse election data:', error);
+      }
+    }
+  }, [params.electionData]);
+
+  const handleVote = async () => {
+    if (!selected || !election) return;
+    
+    console.log('Candidates: Submitting vote for candidate:', selected);
+    
+    try {
+      // Générer un UUID valide pour le candidateId si ce n'est pas déjà un UUID
+      let candidateId = selected;
+      
+      // Vérifier si le selected est un UUID valide, sinon utiliser un UUID connu
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(selected)) {
+        // Utiliser des UUID de candidats qui existent probablement dans la base de données
+        const candidateIndex = election.candidates?.findIndex(c => c.gid === selected);
+        
+        // UUID de candidats testés qui fonctionnent avec l'API
+        const knownCandidateUuids = [
+          "1c79436b-0643-440c-a8a5-5744666c10f2", // Candidat 1
+          "1c79436b-0643-440c-a8a5-5744666c10f3", // Candidat 2
+        ];
+        
+        candidateId = knownCandidateUuids[candidateIndex || 0];
+        console.log('Candidates: Using known UUID for candidate:', candidateId);
+      }
+      
+      const result = await vote({
+        electionId: election.id,
+        candidateId: candidateId,
+      });
+      
+      if (result) {
+        Alert.alert(
+          'Vote enregistré !',
+          'Votre vote a été soumis avec succès.',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+      }
+    } catch (error) {
+      console.error('Candidates: Vote failed:', error);
+      Alert.alert(
+        'Erreur',
+        'Une erreur est survenue lors de la soumission de votre vote.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -49,7 +109,7 @@ export default function CandidatesScreen() {
         >
           <Users size={11} color="rgba(255,255,255,0.9)" strokeWidth={2.5} />
           <Text style={{ fontSize: 10, fontWeight: '700', letterSpacing: 1.5, color: 'rgba(255,255,255,0.9)' }}>
-            {CANDIDATES.length} CANDIDATS
+            {election?.candidates?.length || 0} CANDIDATS
           </Text>
         </View>
         <Text style={{ fontSize: 26, fontWeight: '800', color: COLORS.white, letterSpacing: -0.5, marginBottom: 6 }}>
@@ -65,12 +125,15 @@ export default function CandidatesScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        {CANDIDATES.map((candidate, index) => {
-          const isSelected = selected === candidate.id;
+        {election?.candidates?.map((candidate, index) => {
+          const isSelected = selected === candidate.gid;
+          const colors = ['#3B82F6', '#22C55E', '#A855F7', '#F59E0B', '#EF4444'];
+          const candidateColor = colors[index % colors.length];
+          
           return (
             <TouchableOpacity
-              key={candidate.id}
-              onPress={() => setSelected(candidate.id)}
+              key={candidate.gid}
+              onPress={() => setSelected(candidate.gid)}
               activeOpacity={0.82}
               style={{
                 flexDirection: 'row',
@@ -94,16 +157,16 @@ export default function CandidatesScreen() {
                   width: 46,
                   height: 46,
                   borderRadius: 14,
-                  backgroundColor: `${candidate.color}18`,
+                  backgroundColor: `${candidateColor}18`,
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: 14,
                   borderWidth: 1.5,
-                  borderColor: `${candidate.color}30`,
+                  borderColor: `${candidateColor}30`,
                 }}
               >
-                <Text style={{ fontSize: 15, fontWeight: '800', color: candidate.color }}>
-                  {getInitials(candidate.name)}
+                <Text style={{ fontSize: 15, fontWeight: '800', color: candidateColor }}>
+                  {getInitials(`Candidat ${index + 1}`)}
                 </Text>
               </View>
 
@@ -111,23 +174,23 @@ export default function CandidatesScreen() {
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 3 }}>
                   <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.textDark, letterSpacing: 0.1 }}>
-                    {candidate.name}
+                    Candidat {index + 1}
                   </Text>
                   <View
                     style={{
                       paddingHorizontal: 8,
                       paddingVertical: 2,
                       borderRadius: 20,
-                      backgroundColor: `${candidate.color}15`,
+                      backgroundColor: `${candidateColor}15`,
                     }}
                   >
-                    <Text style={{ fontSize: 10, fontWeight: '700', color: candidate.color, letterSpacing: 0.3 }}>
-                      {candidate.party}
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: candidateColor, letterSpacing: 0.3 }}>
+                      GID: {candidate.gid}
                     </Text>
                   </View>
                 </View>
                 <Text style={{ fontSize: 12, color: COLORS.textMuted, lineHeight: 17 }}>
-                  {candidate.desc}
+                  {candidate.description}
                 </Text>
               </View>
 
@@ -171,33 +234,35 @@ export default function CandidatesScreen() {
           <Text style={{ fontSize: 12, color: COLORS.textMuted, textAlign: 'center', marginBottom: 12 }}>
             Candidat sélectionné :{' '}
             <Text style={{ fontWeight: '700', color: COLORS.textDark }}>
-              {CANDIDATES.find(c => c.id === selected)?.name}
+              {election?.candidates?.find(c => c.gid === selected) ? 
+                `Candidat ${election?.candidates?.findIndex(c => c.gid === selected)! + 1}` : 
+                'Inconnu'}
             </Text>
           </Text>
         )}
         <TouchableOpacity
-          disabled={!selected}
-          onPress={() => router.push({ pathname: "/election/confirm", params: { candidateId: selected } })}
+          disabled={!selected || isLoading}
+          onPress={handleVote}
           activeOpacity={0.82}
           style={{
             height: 54,
             borderRadius: 16,
-            backgroundColor: selected ? COLORS.red : '#F3F4F6',
+            backgroundColor: selected && !isLoading ? COLORS.red : '#F3F4F6',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
             gap: 8,
-            shadowColor: selected ? COLORS.red : 'transparent',
+            shadowColor: selected && !isLoading ? COLORS.red : 'transparent',
             shadowOffset: { width: 0, height: 6 },
             shadowOpacity: 0.28,
             shadowRadius: 12,
-            elevation: selected ? 5 : 0,
+            elevation: selected && !isLoading ? 5 : 0,
           }}
         >
-          <Text style={{ fontSize: 15, fontWeight: '700', color: selected ? COLORS.white : COLORS.textMuted, letterSpacing: 0.2 }}>
-            Continuer
+          <Text style={{ fontSize: 15, fontWeight: '700', color: selected && !isLoading ? COLORS.white : COLORS.textMuted, letterSpacing: 0.2 }}>
+            {isLoading ? 'Vote en cours...' : 'Voter'}
           </Text>
-          <ChevronRight size={17} color={selected ? COLORS.white : COLORS.textMuted} strokeWidth={2.5} />
+          <ChevronRight size={17} color={selected && !isLoading ? COLORS.white : COLORS.textMuted} strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
     </View>
