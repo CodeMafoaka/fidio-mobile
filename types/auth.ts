@@ -6,11 +6,13 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
+  token: string;
   id: string;
+  role: string;
   firstName: string;
   lastName: string;
   gid: string;
-  createdAt: string;
+  password: null;
 }
 
 export interface LoginRequest {

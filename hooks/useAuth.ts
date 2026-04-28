@@ -16,6 +16,20 @@ export const useAuth = () => {
     
     try {
       const response = await apiService.register(userData);
+      // Stocker le token pour les futures requêtes
+      authToken = response.token;
+      console.log('Token stored after registration:', authToken);
+      
+      // Définir l'utilisateur courant avec les données de l'inscription
+      const currentUser: UserResponse = {
+        id: response.id,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        gid: response.gid,
+        password: response.password,
+      };
+      setCurrentUser(currentUser);
+      
       return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Registration failed';

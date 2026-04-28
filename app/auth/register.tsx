@@ -1,3 +1,4 @@
+import Loader, { SuccessLoader } from '@/components/ui/Loader';
 import { useRouter } from "expo-router";
 import { Check, CircleCheckBig, Eye, EyeOff, UserPlus } from "lucide-react-native";
 import { useState } from "react";
