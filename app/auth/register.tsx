@@ -142,33 +142,23 @@ function StepDots({ total, current }: { total: number; current: number }) {
 export default function RegisterScreen() {
   const router = useRouter();
   const { register, isLoading, error, clearError } = useAuth();
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [cin, setCin] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = async () => {
-    if (!fullName.trim() || !cin.trim() || !password.trim()) {
+    if (!firstName.trim() || !lastName.trim() || !cin.trim() || !password.trim()) {
       Alert.alert("Champ requis", "Veuillez remplir tous les champs obligatoires.");
-      return;
-    }
-
-    // Split fullName into firstName and lastName
-    const nameParts = fullName.trim().split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
-
-    if (!firstName || !lastName) {
-      Alert.alert("Nom invalide", "Veuillez entrer votre nom complet (prénom et nom).");
       return;
     }
 
     clearError();
     
     const result = await register({
-      firstName,
-      lastName,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
       gid: cin.trim(),
       password: password.trim(),
     });
@@ -183,9 +173,9 @@ export default function RegisterScreen() {
   };
 
   const isFormValid =
-    fullName.trim().length >= 3 &&
+    firstName.trim().length >= 2 &&
+    lastName.trim().length >= 2 &&
     cin.trim().length >= 10 &&
-    phone.trim().length >= 8 &&
     password.trim().length >= 4;
 
   // Password strength
@@ -282,12 +272,21 @@ export default function RegisterScreen() {
           }}
         >
           <InputField
-            label="NOM COMPLET"
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="Ex : Rakoto Jean"
+            label="PRÉNOM"
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder="Ex : Jean"
             showValid
-            isValid={fullName.trim().length >= 3}
+            isValid={firstName.trim().length >= 2}
+          />
+
+          <InputField
+            label="NOM"
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder="Ex : Rakoto"
+            showValid
+            isValid={lastName.trim().length >= 2}
           />
 
           <InputField
@@ -298,16 +297,6 @@ export default function RegisterScreen() {
             keyboardType="numeric"
             showValid
             isValid={cin.trim().length >= 10}
-          />
-
-          <InputField
-            label="TÉLÉPHONE"
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="Ex : +261 32 00 000 00"
-            keyboardType="phone-pad"
-            showValid
-            isValid={phone.trim().length >= 8}
           />
 
           {/* Password with strength indicator */}
