@@ -1,8 +1,10 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 
 import { BarChart3, Bell, ChevronRight, LogOut, Vote } from "lucide-react-native";
 
 import { StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../hooks/useAuth";
 
 const COLORS = {
   red: '#F9423A',
@@ -99,10 +101,39 @@ function ActionCard({ icon, label, description, onPress, variant = 'default' }: 
 export default function HomeScreen() {
   const router = useRouter();
   const { cin } = useLocalSearchParams<{ cin?: string }>();
+  const { getCurrentUser, currentUser, isLoading } = useAuth();
+  const [user, setUser] = useState(currentUser);
 
-  // Derive initials from CIN or fallback
-  const displayCin = cin || '—';
-  const initials = displayCin.length >= 2 ? displayCin.slice(0, 2).toUpperCase() : 'EL';
+  useEffect(() => {
+    const fetchUserData = async () => {
+      console.log('Fetching user data...');
+      const userData = await getCurrentUser();
+      console.log('User data received:', userData);
+      if (userData) {
+        setUser(userData);
+        console.log('User data set:', userData);
+      } else {
+        console.log('No user data received');
+      }
+    };
+    
+    fetchUserData();
+  }, [getCurrentUser]);
+
+  // Use fetched user data or fallback to CIN param
+  const displayCin = user?.gid || cin || '—';
+  const displayName = user ? `${user.firstName} ${user.lastName}` : 'Jean Rakoto';
+  const initials = displayName
+    .split(' ')
+    .map(name => name.charAt(0).toUpperCase())
+    .join('')
+    .slice(0, 2) || 'EL';
+
+  // Debug logs
+  console.log('Current user state:', user);
+  console.log('Display CIN:', displayCin);
+  console.log('Display name:', displayName);
+  console.log('Initials:', initials);
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -140,7 +171,7 @@ export default function HomeScreen() {
                 marginBottom: 2,
               }}
             >
-              Jean Rakoto
+              {displayName}
             </Text>
             <Text
               style={{

@@ -1,4 +1,4 @@
-import { RegisterRequest, RegisterResponse, LoginRequest, LoginResponse, ApiError } from '@/types/auth';
+import { ApiError, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse } from '../types/auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://fidio-api-dev.onrender.com';
 
@@ -51,6 +51,19 @@ class ApiService {
     return this.request<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
+    });
+  }
+
+  async getCurrentUser(token?: string): Promise<UserResponse> {
+    const headers: HeadersInit = {};
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return this.request<UserResponse>('/auth/me', {
+      method: 'GET',
+      headers,
     });
   }
 

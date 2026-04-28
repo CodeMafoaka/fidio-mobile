@@ -2,15 +2,15 @@ import { useRouter } from 'expo-router';
 import { Camera, Check, Eye, EyeOff, Fingerprint, MessageCircleQuestion, ShieldCheck, UserRound } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 

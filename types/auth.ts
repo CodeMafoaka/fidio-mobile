@@ -28,6 +28,14 @@ export interface LoginResponse {
   };
 }
 
+export interface UserResponse {
+  id: string;
+  firstName: string;
+  lastName: string;
+  gid: string;
+  password: null;
+}
+
 export interface ApiError {
   message: string;
   code?: string;
