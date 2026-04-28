@@ -1,3 +1,4 @@
+import Loader, { SuccessLoader } from '@/components/ui/Loader';
 import { useRouter } from 'expo-router';
 import { Camera, Check, Eye, EyeOff, Fingerprint, MessageCircleQuestion, ShieldCheck, UserRound } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -117,14 +118,22 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [cinFocused, setCinFocused] = useState(false);
   const [pwdFocused, setPwdFocused] = useState(false);
+  const [showSuccessLoader, setShowSuccessLoader] = useState(false);
+  const [showErrorLoader, setShowErrorLoader] = useState(false);
 
   const handleLogin = async () => {
     if (!cin.trim()) {
-      Alert.alert('Champ requis', 'Veuillez saisir votre numéro CIN.');
+      setShowErrorLoader(true);
+      setTimeout(() => {
+        setShowErrorLoader(false);
+      }, 2000);
       return;
     }
     if (!password.trim()) {
-      Alert.alert('Champ requis', 'Veuillez saisir votre mot de passe.');
+      setShowErrorLoader(true);
+      setTimeout(() => {
+        setShowErrorLoader(false);
+      }, 2000);
       return;
     }
 
@@ -136,14 +145,16 @@ export default function LoginScreen() {
     });
 
     if (result) {
-      // Stocker le token JWT si nécessaire
-      // await SecureStore.setItemAsync('authToken', result.token);
-      
-      Alert.alert('Connexion réussie', 'Bienvenue sur la plateforme de vote électronique.', [
-        { text: 'Continuer', onPress: () => router.replace({ pathname: '/home', params: { cin } }) },
-      ]);
+      setShowSuccessLoader(true);
+      setTimeout(() => {
+        setShowSuccessLoader(false);
+        router.replace({ pathname: '/home', params: { cin } });
+      }, 2000);
     } else if (error) {
-      Alert.alert('Erreur de connexion', error);
+      setShowErrorLoader(true);
+      setTimeout(() => {
+        setShowErrorLoader(false);
+      }, 2000);
     }
   };
 
@@ -430,6 +441,24 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      {/* Loaders */}
+      <Loader 
+        visible={isLoading} 
+        message="Connexion en cours..." 
+        size="large" 
+      />
+      
+      <SuccessLoader 
+        visible={showSuccessLoader} 
+        message="Connexion réussie !" 
+      />
+      
+      <Loader 
+        visible={showErrorLoader} 
+        message={error || "Veuillez remplir tous les champs"} 
+        size="small" 
+      />
     </KeyboardAvoidingView>
   );
 }

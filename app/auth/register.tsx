@@ -2,7 +2,6 @@ import { useRouter } from "expo-router";
 import { Check, CircleCheckBig, Eye, EyeOff, UserPlus } from "lucide-react-native";
 import { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,7 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -147,10 +146,15 @@ export default function RegisterScreen() {
   const [cin, setCin] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showSuccessLoader, setShowSuccessLoader] = useState(false);
+  const [showErrorLoader, setShowErrorLoader] = useState(false);
 
   const handleRegister = async () => {
     if (!firstName.trim() || !lastName.trim() || !cin.trim() || !password.trim()) {
-      Alert.alert("Champ requis", "Veuillez remplir tous les champs obligatoires.");
+      setShowErrorLoader(true);
+      setTimeout(() => {
+        setShowErrorLoader(false);
+      }, 2000);
       return;
     }
 
@@ -164,11 +168,16 @@ export default function RegisterScreen() {
     });
 
     if (result) {
-      Alert.alert("Inscription réussie", "Votre compte électeur est créé.", [
-        { text: "Continuer", onPress: () => router.replace({ pathname: "/home", params: { cin } }) },
-      ]);
+      setShowSuccessLoader(true);
+      setTimeout(() => {
+        setShowSuccessLoader(false);
+        router.replace({ pathname: "/home", params: { cin } });
+      }, 2000);
     } else if (error) {
-      Alert.alert("Erreur d'inscription", error);
+      setShowErrorLoader(true);
+      setTimeout(() => {
+        setShowErrorLoader(false);
+      }, 2000);
     }
   };
 
@@ -419,6 +428,24 @@ export default function RegisterScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      {/* Loaders */}
+      <Loader 
+        visible={isLoading} 
+        message="Inscription en cours..." 
+        size="large" 
+      />
+      
+      <SuccessLoader 
+        visible={showSuccessLoader} 
+        message="Inscription réussie !" 
+      />
+      
+      <Loader 
+        visible={showErrorLoader} 
+        message={error || "Veuillez remplir tous les champs"} 
+        size="small" 
+      />
     </KeyboardAvoidingView>
   );
 }
