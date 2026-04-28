@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useRef, useState } from "react";
 import { Animated, StatusBar, Text, View } from "react-native";
 
@@ -15,16 +16,16 @@ const COLORS = {
 const CANDIDATE_COLORS = ['#F9423A', '#3B82F6', '#A855F7'];
 const CANDIDATE_BG = ['#FFF0EF', '#EFF6FF', '#FAF5FF'];
 
-const BASE_RESULTS = [
-  { name: "Andry R.", party: "Union citoyenne", value: 42 },
-  { name: "Miora L.", party: "Mada verte", value: 35 },
-  { name: "Tiana M.", party: "Justice sociale", value: 23 },
-];
-
-const TOTAL_VOTES = 14_832;
-
 function getInitials(name: string) {
   return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+}
+
+// Types pour les résultats de candidats
+interface CandidateResult {
+  name: string;
+  party: string;
+  value: number;
+  votes: number;
 }
 
 // ── Animated bar ─────────────────────────────────────────────
@@ -33,11 +34,13 @@ function ResultBar({
   index,
   isLeader,
   delay,
+  totalVotes,
 }: {
-  item: typeof BASE_RESULTS[0];
+  item: CandidateResult;
   index: number;
   isLeader: boolean;
   delay: number;
+  totalVotes: number;
 }) {
   const barAnim = useRef(new Animated.Value(0)).current;
 
@@ -147,7 +150,7 @@ function ResultBar({
 
       {/* Vote estimate */}
       <Text style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 6, letterSpacing: 0.3 }}>
-        ≈ {Math.round(TOTAL_VOTES * item.value / 100).toLocaleString('fr-FR')} votes estimés
+        ≈ {Math.round(totalVotes * item.value / 100).toLocaleString('fr-FR')} votes estimés
       </Text>
     </View>
   );
@@ -181,22 +184,78 @@ function PulseDot() {
 
 // ── Main Screen ──────────────────────────────────────────────
 export default function LiveResultsScreen() {
-  const [tick, setTick] = useState(0);
+  const { getElections, isLoading } = useAuth();
+  const [elections, setElections] = useState<any[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [tick, setTick] = useState(0);
 
-  // Simulate live refresh every 5s
+  // Récupérer les élections au montage et toutes les 5 secondes
   useEffect(() => {
-    const id = setInterval(() => {
-      setTick(t => t + 1);
-      setLastUpdate(new Date());
-    }, 5000);
-    return () => clearInterval(id);
+    const fetchElections = async () => {
+      try {
+        console.log('Results: Fetching elections data');
+        const electionsData = await getElections();
+        console.log('Results: Elections data received:', electionsData);
+        
+        if (electionsData) {
+          setElections(electionsData);
+          setLastUpdate(new Date());
+        }
+      } catch (error) {
+        console.error('Results: Failed to fetch elections:', error);
+      }
+    };
+
+    fetchElections();
+
+    // Rafraîchir toutes les 5 secondes
+    const interval = setInterval(fetchElections, 5000);
+    return () => clearInterval(interval);
+  }, [getElections]);
+
+  // Timer pour le rafraîchissement visuel
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  const leaderIndex = BASE_RESULTS.reduce(
-    (best, item, i) => (item.value > BASE_RESULTS[best].value ? i : best),
-    0
-  );
+  // Transformer les données d'élections en résultats simulés
+  const getCandidateResults = (): CandidateResult[] => {
+    if (!elections || elections.length === 0) return [];
+
+    // Utiliser la première élection et ses candidats
+    const firstElection = elections[0];
+    if (!firstElection.candidates || firstElection.candidates.length === 0) return [];
+
+    // Simuler des résultats de vote basés sur les candidats existants
+    // Pour l'instant, nous allons simuler des votes pour démontrer
+    const simulatedVotes = firstElection.candidates.map((candidate: any, index: number) => {
+      // Simuler des votes (pour la démo, nous donnons des valeurs différentes)
+      const voteAmount = index === 0 ? 2 : 1; // Premier candidat a 2 votes, second a 1 vote
+      return {
+        candidateGid: candidate.gid,
+        voteAmount: voteAmount,
+      };
+    });
+
+    const totalVotesCount = simulatedVotes.reduce((sum, candidate) => sum + candidate.voteAmount, 0);
+
+    return simulatedVotes.map((candidate, index) => {
+      const percentage = totalVotesCount > 0 ? Math.round((candidate.voteAmount / totalVotesCount) * 100) : 0;
+      return {
+        name: `Candidat ${index + 1}`,
+        party: `GID: ${candidate.candidateGid}`,
+        value: percentage,
+        votes: candidate.voteAmount,
+      };
+    });
+  };
+
+  const candidateResults = getCandidateResults();
+  const totalVotes = candidateResults.reduce((sum, candidate) => sum + candidate.votes, 0);
+  const leaderIndex = candidateResults.length > 0 
+    ? candidateResults.reduce((best, item, i) => item.value > candidateResults[best].value ? i : best, 0)
+    : -1;
 
   const formatTime = (d: Date) =>
     d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -253,7 +312,7 @@ export default function LiveResultsScreen() {
         >
           <View style={{ alignItems: 'center' }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.textDark, letterSpacing: -0.3 }}>
-              {TOTAL_VOTES.toLocaleString('fr-FR')}
+              {totalVotes.toLocaleString('fr-FR')}
             </Text>
             <Text style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 2, letterSpacing: 0.5 }}>
               VOTES COMPTÉS
@@ -262,7 +321,7 @@ export default function LiveResultsScreen() {
           <View style={{ width: 1, backgroundColor: COLORS.border }} />
           <View style={{ alignItems: 'center' }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.textDark }}>
-              3
+              {candidateResults.length}
             </Text>
             <Text style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 2, letterSpacing: 0.5 }}>
               CANDIDATS
@@ -271,7 +330,7 @@ export default function LiveResultsScreen() {
           <View style={{ width: 1, backgroundColor: COLORS.border }} />
           <View style={{ alignItems: 'center' }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: '#22C55E' }}>
-              67%
+              {isLoading ? '...' : '100%'}
             </Text>
             <Text style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 2, letterSpacing: 0.5 }}>
               PARTICIPATION
@@ -285,15 +344,46 @@ export default function LiveResultsScreen() {
         </Text>
 
         {/* Result bars */}
-        {BASE_RESULTS.map((item, i) => (
+        {candidateResults.map((item, i) => (
           <ResultBar
             key={item.name}
             item={item}
             index={i}
             isLeader={i === leaderIndex}
             delay={i * 150}
+            totalVotes={totalVotes}
           />
         ))}
+
+        {candidateResults.length === 0 && !isLoading && (
+          <View style={{ 
+            backgroundColor: COLORS.surface, 
+            borderRadius: 20, 
+            padding: 20, 
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: COLORS.border
+          }}>
+            <Text style={{ fontSize: 14, color: COLORS.textMuted, textAlign: 'center' }}>
+              Aucun résultat disponible pour le moment
+            </Text>
+          </View>
+        )}
+
+        {isLoading && (
+          <View style={{ 
+            backgroundColor: COLORS.surface, 
+            borderRadius: 20, 
+            padding: 20, 
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: COLORS.border
+          }}>
+            <Text style={{ fontSize: 14, color: COLORS.textMuted }}>
+              Chargement des résultats...
+            </Text>
+          </View>
+        )}
 
         {/* Last update */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, justifyContent: 'center' }}>

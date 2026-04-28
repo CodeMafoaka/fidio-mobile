@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { apiService } from '../services/api';
-import { Election, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse } from '../types/auth';
+import { Election, ElectionResult, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse, VoteRequest, VoteResponse } from '../types/auth';
 
 // Stockage simple du token en mémoire
 let authToken: string | null = null;
@@ -148,12 +148,37 @@ export const useAuth = () => {
     }
   }, []);
 
+  const getElectionResults = useCallback(async (electionId: string): Promise<ElectionResult | null> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Utiliser le token stocké
+      const tokenToUse = authToken || undefined;
+      console.log('Hook: Fetching election results with token:', tokenToUse ? 'YES' : 'NO');
+      console.log('Hook: Election ID:', electionId);
+      
+      const result = await apiService.getElectionResults(electionId, tokenToUse);
+      console.log('Hook: Election results fetched successfully:', result);
+      
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch election results';
+      console.error('Hook: Election results error:', errorMessage);
+      setError(errorMessage);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     register,
     login,
     getCurrentUser,
     getElections,
     getElectionResult,
+    getElectionResults,
     vote,
     currentUser,
     isLoading,

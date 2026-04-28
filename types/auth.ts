@@ -74,3 +74,15 @@ export interface VoteResponse {
   message: string;
   voteId?: string;
 }
+
+// Types pour les résultats d'élection
+export interface ElectionCandidateResult {
+  candidateGid: string;
+  voteAmount: number;
+}
+
+export interface ElectionResult {
+  electionId: string;
+  totalVote: number;
+  candidateResults: ElectionCandidateResult[];
+}

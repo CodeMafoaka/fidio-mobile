@@ -1,4 +1,4 @@
-import { ApiError, Election, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse, VoteRequest, VoteResponse } from '../types/auth';
+import { ApiError, Election, ElectionResult, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse, VoteRequest, VoteResponse } from '../types/auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://fidio-api-dev.onrender.com';
 
@@ -177,6 +177,28 @@ class ApiService {
       }
     } catch (error) {
       console.error('API: Failed to submit vote:', error);
+      throw error;
+    }
+  }
+
+  async getElectionResults(electionId: string, token?: string): Promise<ElectionResult> {
+    const headers: HeadersInit = {};
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    console.log('API: Fetching election results for ID:', electionId);
+    
+    try {
+      const result = await this.request<ElectionResult>(`/elections/${electionId}/result`, {
+        method: 'GET',
+        headers,
+      });
+      console.log('API: Election results fetched successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('API: Failed to fetch election results:', error);
       throw error;
     }
   }
