@@ -1,9 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Election } from "@/types/auth";
 import { useRouter } from "expo-router";
-import { CalendarClock, ChevronRight, Clock3, ShieldCheck, Users } from "lucide-react-native";
+import { CalendarClock, Clock3, ShieldCheck, Users } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StatusBar, Text, View } from "react-native";
 
 const COLORS = {
   red: '#F9423A',
@@ -253,45 +253,6 @@ export default function ElectionDetailsScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom CTA */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingHorizontal: 20,
-          paddingBottom: 36,
-          paddingTop: 16,
-          backgroundColor: COLORS.bg,
-          borderTopWidth: 1,
-          borderTopColor: COLORS.border,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.push({ pathname: "/election/candidates", params: { electionId: elections[0]?.id } })}
-          activeOpacity={0.82}
-          style={{
-            height: 54,
-            borderRadius: 16,
-            backgroundColor: COLORS.red,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            shadowColor: COLORS.red,
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.28,
-            shadowRadius: 12,
-            elevation: 5,
-          }}
-        >
-          <Text style={{ fontSize: 15, fontWeight: '700', color: COLORS.white, letterSpacing: 0.2 }}>
-            Voir les candidats
-          </Text>
-          <ChevronRight size={17} color={COLORS.white} strokeWidth={2.5} />
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
