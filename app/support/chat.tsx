@@ -1,8 +1,8 @@
+import { askAssistant, ChatContext, ChatMessage } from "@/lib/chatAssistant";
 import { useLocalSearchParams } from "expo-router";
 import { Bot, SendHorizontal, Sparkles } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { askAssistant, ChatContext, ChatMessage } from "@/lib/chatAssistant";
 
 function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -17,15 +17,16 @@ export default function ChatSupportScreen() {
     {
       id: makeId(),
       role: "assistant",
-      text: "Bonjour, je suis ton assistant support. Pose-moi une question sur l'inscription, l'OTP, le recu ou les resultats.",
+      text: "Bonjour ! Je suis l'assistant Fidio, votre guide pour la plateforme de vote électronique sécurisé. Comment puis-je vous aider avec l'élection, votre profil ou les résultats ?",
     },
   ]);
 
   const quickActions = useMemo(
     () => [
-      "Comment obtenir le code OTP ?",
-      "Comment verifier mon recu ?",
-      "Ou voir les resultats ?",
+      "Comment participer à l'élection ?",
+      "Où voir les résultats en direct ?",
+      "Comment gérer mon profil ?",
+      "La sécurité du vote",
     ],
     []
   );
