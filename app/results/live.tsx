@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { ElectionResult } from "@/types/auth";
 import { useEffect, useRef, useState } from "react";
 import { Animated, StatusBar, Text, View } from "react-native";
 
@@ -26,6 +27,7 @@ interface CandidateResult {
   party: string;
   value: number;
   votes: number;
+  gid: string;
 }
 
 // ── Animated bar ─────────────────────────────────────────────
@@ -184,69 +186,57 @@ function PulseDot() {
 
 // ── Main Screen ──────────────────────────────────────────────
 export default function LiveResultsScreen() {
-  const { getElections, isLoading } = useAuth();
-  const [elections, setElections] = useState<any[]>([]);
+  const { getElections, getElectionResults, isLoading } = useAuth();
+  const [electionResults, setElectionResults] = useState<ElectionResult | null>(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
-  const [tick, setTick] = useState(0);
 
-  // Récupérer les élections au montage et toutes les 5 secondes
+  // Récupérer les élections et les résultats au montage et toutes les 5 secondes
   useEffect(() => {
-    const fetchElections = async () => {
+    const fetchData = async () => {
       try {
         console.log('Results: Fetching elections data');
         const electionsData = await getElections();
         console.log('Results: Elections data received:', electionsData);
         
-        if (electionsData) {
-          setElections(electionsData);
+        if (electionsData && electionsData.length > 0) {
+          // Récupérer les résultats de la première élection
+          const firstElection = electionsData[0];
+          console.log('Results: Fetching results for election:', firstElection.id);
+          
+          const results = await getElectionResults(firstElection.id);
+          console.log('Results: Election results received:', results);
+          
+          setElectionResults(results);
           setLastUpdate(new Date());
         }
       } catch (error) {
-        console.error('Results: Failed to fetch elections:', error);
+        console.error('Results: Failed to fetch data:', error);
       }
     };
 
-    fetchElections();
+    fetchData();
 
     // Rafraîchir toutes les 5 secondes
-    const interval = setInterval(fetchElections, 5000);
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
-  }, [getElections]);
+  }, [getElections, getElectionResults]);
 
-  // Timer pour le rafraîchissement visuel
-  useEffect(() => {
-    const timer = setInterval(() => setTick(t => t + 1), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Transformer les données d'élections en résultats simulés
+  // Transformer les données de l'API en résultats pour l'affichage
   const getCandidateResults = (): CandidateResult[] => {
-    if (!elections || elections.length === 0) return [];
+    if (!electionResults || !electionResults.candidateResults) return [];
 
-    // Utiliser la première élection et ses candidats
-    const firstElection = elections[0];
-    if (!firstElection.candidates || firstElection.candidates.length === 0) return [];
-
-    // Simuler des résultats de vote basés sur les candidats existants
-    // Pour l'instant, nous allons simuler des votes pour démontrer
-    const simulatedVotes = firstElection.candidates.map((candidate: any, index: number) => {
-      // Simuler des votes (pour la démo, nous donnons des valeurs différentes)
-      const voteAmount = index === 0 ? 2 : 1; // Premier candidat a 2 votes, second a 1 vote
-      return {
-        candidateGid: candidate.gid,
-        voteAmount: voteAmount,
-      };
-    });
-
-    const totalVotesCount = simulatedVotes.reduce((sum, candidate) => sum + candidate.voteAmount, 0);
-
-    return simulatedVotes.map((candidate, index) => {
-      const percentage = totalVotesCount > 0 ? Math.round((candidate.voteAmount / totalVotesCount) * 100) : 0;
+    // Utiliser les vraies données de l'API
+    return electionResults.candidateResults.map((candidate, index) => {
+      const percentage = electionResults.totalVote > 0 
+        ? Math.round((candidate.voteAmount / electionResults.totalVote) * 100) 
+        : 0;
+      
       return {
         name: `Candidat ${index + 1}`,
         party: `GID: ${candidate.candidateGid}`,
         value: percentage,
         votes: candidate.voteAmount,
+        gid: candidate.candidateGid,
       };
     });
   };
